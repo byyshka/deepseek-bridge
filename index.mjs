@@ -437,4 +437,4 @@ if (startedDirectly()) {
   });
 }
 
-export { resolveDshEntry, formatResult, extractFailureHint };
+export { resolveDshEntry, formatResult, extractFailureHint, runDsh };

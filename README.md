@@ -67,7 +67,7 @@ finished.
 git clone https://github.com/byyshka/deepseek-bridge.git
 cd deepseek-bridge
 npm install
-npm test          # optional, 7 tests, no network and no DSH needed
+npm test          # optional, 15 tests, no network and no DSH needed
 ```
 
 Register it with Claude Code (the `claude` CLI has to be installed already):
@@ -138,7 +138,7 @@ v2.3 — plugin hooks now receive a frozen context object
 v3.0 — Node 18 dropped
 
 ---
-Took 11.2s in /home/me/project.
+Took 11.2s in C:path	oyourproject.
 DSH produced 2143 chars of reasoning on stderr. Tool calls are NOT reported by the headless
 profile — if the answer states a fact about this codebase, confirm it was read rather than recalled.
 ```
