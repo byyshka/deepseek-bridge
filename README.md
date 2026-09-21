@@ -16,8 +16,8 @@ context.
 - **A working DeepSeek Harness install** — see the next section, this is the part that takes time
 - A **DeepSeek API key** available to the bridge as `DEEPSEEK_API_KEY`
 
-Verified on Windows 11. The code paths for Linux and macOS are there but have not been exercised —
-reports welcome.
+**Windows only.** Built and tested on Windows 11. There are POSIX branches in the code, but they are
+neither tested nor supported.
 
 ## Set up DeepSeek Harness first
 
