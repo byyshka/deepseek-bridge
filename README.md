@@ -13,13 +13,53 @@ context.
 ## Requirements
 
 - **Node.js ≥ 20.11** (the server reads `import.meta.dirname`)
-- **DeepSeek Harness** installed locally — `npm i -g @deepseek-ai/dsh`, or the DSH Desktop app,
-  which keeps its CLI profiles under `~/.dsh`
-- A **DeepSeek API key**. The CLI profile does *not* inherit the key stored by DSH Desktop; without
-  `DEEPSEEK_API_KEY` in the environment DSH fails with `MISSING_CREDENTIAL`.
+- **A working DeepSeek Harness install** — see the next section, this is the part that takes time
+- A **DeepSeek API key** available to the bridge as `DEEPSEEK_API_KEY`
 
 Verified on Windows 11. The code paths for Linux and macOS are there but have not been exercised —
 reports welcome.
+
+## Set up DeepSeek Harness first
+
+This bridge is a thin adapter. It spawns DSH and reads its output; it does not install, configure or
+authenticate anything. **DSH is a separate product with its own setup, and that setup is not a
+five-minute job** — budget an evening for it rather than a coffee break.
+
+What has to be in place before the bridge is of any use:
+
+1. **DSH itself** — either `npm i -g @deepseek-ai/dsh`, or the DSH Desktop application, which keeps
+   its CLI profiles under `$DSH_HOME` (`~/.dsh` by default). Both work; the bridge probes the known
+   layouts and `DSH_BIN` overrides all of them.
+
+2. **Credentials.** If you installed through Desktop, note that it stores the key in its own
+   credential service and **the CLI profile does not inherit it** — running headless then fails with
+   `MISSING_CREDENTIAL: llm-deepseek: no API key for provider route "deepseek-official"`. Either
+   store the key through DSH's own Models page, or pass `DEEPSEEK_API_KEY` in the bridge's
+   environment, which is what the config example below does.
+
+3. **The `headless` profile.** The bridge runs `dsh --profile headless`, which answers one task and
+   exits. Confirm it works on its own before wiring anything up:
+
+   ```bash
+   dsh --profile headless "reply with one word: ok"
+   ```
+
+   If your profile stack does not include it, create it from a shipped template
+   (`dsh --profile headless --from-default-profile <template>`) — profiles are a DSH concept, and
+   its documentation is the authority here.
+
+4. **Project instructions, if you want them respected.** DSH loads `AGENTS.md`, `CLAUDE.md` and
+   `RULES.md` by walking from the project root down to the working directory. Whatever conventions
+   you expect the delegated agent to follow have to exist in those files — the bridge only decides
+   *which directory* it runs in, through `cwd` / `DEEPSEEK_BRIDGE_CWD`. Note that DSH does **not**
+   read `.claude/rules/`, so rules kept only there will not reach it.
+
+5. **Optionally, MCP servers for DSH.** DSH speaks MCP as a client, configured on its side. Anything
+   you give it there, the delegated agent can use — none of it comes from this bridge.
+
+Only once `dsh --profile headless "..."` answers correctly on its own does it make sense to install
+the bridge. Nearly every "the bridge does not work" case is really a DSH setup that was never
+finished.
 
 ## Install
 
