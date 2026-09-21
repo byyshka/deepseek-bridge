@@ -67,7 +67,7 @@ finished.
 git clone https://github.com/byyshka/deepseek-bridge.git
 cd deepseek-bridge
 npm install
-npm test          # optional, 24 tests, no network and no DSH needed
+npm test          # optional: runs offline, needs neither DSH nor an API key
 ```
 
 Register it with Claude Code (the `claude` CLI has to be installed already):
