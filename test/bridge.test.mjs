@@ -63,6 +63,10 @@ test("a missing DSH install reports every path that was tried", () => {
   // Every source of candidates has to be neutralised, not just DSH_HOME: on a machine where DSH
   // is genuinely installed, one live path left unmocked turns this into a test that passes for
   // the wrong reason — or, as happened here, fails the moment a new candidate is added.
+  //
+  // One source cannot be neutralised: the global node_modules beside process.execPath. Nothing
+  // sets it, so if DSH ever lands there this test will fail rather than pass quietly — which is
+  // the safer direction, and the reason the assertion below checks the message, not the throw.
   const saved = {
     bin: process.env.DSH_BIN,
     home: process.env.DSH_HOME,

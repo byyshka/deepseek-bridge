@@ -33,11 +33,14 @@ What has to be in place before the bridge is of any use:
 
    [dsh]: https://github.com/deepseek-ai/deepseek-harness
 
-2. **Credentials.** If you installed through Desktop, note that it stores the key in its own
-   credential service and **the CLI profile does not inherit it** — running headless then fails with
-   `MISSING_CREDENTIAL: llm-deepseek: no API key for provider route "deepseek-official"`. Either
-   store the key through DSH's own Models page, or pass `DEEPSEEK_API_KEY` in the bridge's
-   environment, which is what the config example below does.
+2. **Credentials — `DEEPSEEK_API_KEY` in the bridge's environment, and nothing else will do.**
+   The bridge refuses to start a run without that variable, before spawning anything.
+
+   If you installed through Desktop, note that it keeps the key in its own credential service and
+   **the CLI profile does not inherit it** — running headless without the variable fails with
+   `MISSING_CREDENTIAL: llm-deepseek: no API key for provider route "deepseek-official"`. Storing
+   the key through DSH's own Models page is therefore not enough here: put it in the server's `env`
+   block, as the config example below does.
 
 3. **The `headless` profile.** The bridge runs `dsh --profile headless`, which answers one task and
    exits. Confirm it works on its own before wiring anything up:

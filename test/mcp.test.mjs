@@ -85,6 +85,17 @@ test("the server advertises exactly one tool, named deepseek_ask", async () => {
     ["deepseek_ask"],
   );
   assert.match(tools[0].description, /DeepSeek Harness/);
+
+  // The description is what the calling agent decides on, so it has to carry the warnings rather
+  // than leave them to a README the agent never sees. Matching only the product name would let a
+  // revision quietly go back to describing DSH as something that merely reads files.
+  for (const [pattern, missing] of [
+    [/NOT A READER/i, "that DSH can write and run commands"],
+    [/inherits/i, "that the child inherits this server's environment"],
+    [/cannot show|which tools/i, "that tool calls are not reported back"],
+  ]) {
+    assert.match(tools[0].description, pattern, `the tool description no longer states ${missing}`);
+  }
 });
 
 test("its schema requires a prompt and accepts the documented options", async () => {
