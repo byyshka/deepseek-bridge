@@ -17,9 +17,6 @@
     "win32"
   ],
   "main": "index.mjs",
-  "bin": {
-    "deepseek-bridge": "index.mjs"
-  },
   "files": [
     "index.mjs",
     "README.md",

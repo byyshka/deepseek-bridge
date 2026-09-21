@@ -27,9 +27,11 @@ five-minute job** — budget an evening for it rather than a coffee break.
 
 What has to be in place before the bridge is of any use:
 
-1. **DSH itself** — either `npm i -g @deepseek-ai/dsh`, or the DSH Desktop application, which keeps
-   its CLI profiles under `$DSH_HOME` (`~/.dsh` by default). Both work; the bridge probes the known
-   layouts and `DSH_BIN` overrides all of them.
+1. **DSH itself** — [DeepSeek Harness][dsh], either `npm i -g @deepseek-ai/dsh` or the DSH Desktop
+   application, which keeps its CLI profiles under `$DSH_HOME` (`~/.dsh` by default). Both work;
+   the bridge probes the known layouts and `DSH_BIN` overrides all of them.
+
+   [dsh]: https://github.com/deepseek-ai/deepseek-harness
 
 2. **Credentials.** If you installed through Desktop, note that it stores the key in its own
    credential service and **the CLI profile does not inherit it** — running headless then fails with
@@ -44,9 +46,14 @@ What has to be in place before the bridge is of any use:
    dsh --profile headless "reply with one word: ok"
    ```
 
-   If your profile stack does not include it, create it from a shipped template
-   (`dsh --profile headless --from-default-profile <template>`) — profiles are a DSH concept, and
-   its documentation is the authority here.
+   If your profile stack does not include it, create one from a shipped template — `web` is the
+   one that ships by default:
+
+   ```powershell
+   dsh --profile headless --from-default-profile web
+   ```
+
+   Profiles are a DSH concept; its own documentation is the authority on which templates exist.
 
 4. **Project instructions, if you want them respected.** DSH loads `AGENTS.md`, `CLAUDE.md` and
    `RULES.md` by walking from the project root down to the working directory. Whatever conventions
