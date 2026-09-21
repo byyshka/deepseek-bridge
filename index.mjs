@@ -153,13 +153,26 @@ function killTree(child) {
   }
 }
 
-for (const signal of ["exit", "SIGINT", "SIGTERM"]) {
-  process.on(signal, () => {
-    for (const child of liveChildren) {
-      killTree(child);
-    }
-  });
+function killAllChildren() {
+  for (const child of liveChildren) {
+    killTree(child);
+  }
 }
+
+// On "exit" only synchronous cleanup is possible, and calling process.exit there would recurse.
+process.on("exit", killAllChildren);
+
+// A signal handler replaces the default action, so the process would otherwise keep running and
+// ignore Ctrl+C. Clean up, then exit with the conventional 128 + signal number.
+process.on("SIGINT", () => {
+  killAllChildren();
+  process.exit(130);
+});
+
+process.on("SIGTERM", () => {
+  killAllChildren();
+  process.exit(143);
+});
 
 function runDsh({ prompt, cwd, timeoutSec }) {
   const entry = resolveDshEntry();
@@ -245,7 +258,10 @@ function runDsh({ prompt, cwd, timeoutSec }) {
           new Error(
             `DSH was killed by the ${timeoutSec}s timeout. ` +
               (answer
-                ? `Partial output (${answer.length} chars) is in the log — treat it as incomplete.`
+                ? `Partial output (${answer.length} chars) was produced` +
+                  (LOGGING_ENABLED
+                    ? " and kept in the log — treat it as incomplete."
+                    : " and discarded; set DEEPSEEK_BRIDGE_LOG=1 to keep partial output.")
                 : "No answer had been produced."),
           ),
         );
@@ -384,10 +400,11 @@ async function main() {
   );
 }
 
-// Compare real paths, not URLs. This file is reached through a junction
-// (%USERPROFILE%\.claude\mcp-servers -> the repo), and Node resolves import.meta.url to the
-// junction TARGET while argv[1] keeps the path as spawned. A plain URL comparison is then false
-// and the server exits 0 without ever starting — a silent no-op, not an error.
+// Compare real paths, not URLs. When this file is reached through a symlink or junction, Node
+// resolves import.meta.url to the link TARGET while argv[1] keeps the path as spawned. A plain URL
+// comparison is then false and the server exits 0 without ever starting — a silent no-op, not an
+// error. Paths are compared case-insensitively on Windows, where realpathSync keeps the case it
+// was handed and the same file can arrive as c:\... or C:\...
 function startedDirectly() {
   if (!process.argv[1]) {
     return false;

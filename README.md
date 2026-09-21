@@ -63,21 +63,22 @@ finished.
 
 ## Install
 
-```bash
-git clone <this repo> deepseek-bridge
+```powershell
+git clone https://github.com/byyshka/deepseek-bridge.git
 cd deepseek-bridge
 npm install
+npm test          # optional, 7 tests, no network and no DSH needed
 ```
 
-Register it with Claude Code:
+Register it with Claude Code (the `claude` CLI has to be installed already):
 
-```bash
-claude mcp add deepseek-bridge --scope user \
-  --env DEEPSEEK_API_KEY=sk-... \
-  -- node /absolute/path/to/deepseek-bridge/index.mjs
+```powershell
+claude mcp add deepseek-bridge --scope user `
+  --env DEEPSEEK_API_KEY=sk-... `
+  -- node C:\path\to\deepseek-bridge\index.mjs
 ```
 
-Or add it to `~/.claude.json` by hand:
+Or add it to `~/.claude.json` by hand — note the doubled backslashes, JSON needs them:
 
 ```json
 {
@@ -85,10 +86,10 @@ Or add it to `~/.claude.json` by hand:
     "deepseek-bridge": {
       "type": "stdio",
       "command": "node",
-      "args": ["/absolute/path/to/deepseek-bridge/index.mjs"],
+      "args": ["C:\\path\\to\\deepseek-bridge\\index.mjs"],
       "env": {
         "DEEPSEEK_API_KEY": "sk-...",
-        "DEEPSEEK_BRIDGE_CWD": "/absolute/path/to/your/project"
+        "DEEPSEEK_BRIDGE_CWD": "C:\\path\\to\\your\\project"
       }
     }
   }
@@ -176,7 +177,7 @@ instead of pasting them; that is cheaper for you anyway.
 | `DSH_BIN` | — | Absolute path to DSH's `lib/bin.js`. Wins over any auto-detection. |
 | `DSH_HOME` | `~/.dsh` | Where DSH Desktop keeps its CLI profiles. |
 | `DEEPSEEK_BRIDGE_LOG` | off | Set to `1` to enable the call log. |
-| `DEEPSEEK_BRIDGE_LOG_DIR` | `./logs` | Where the log is written. |
+| `DEEPSEEK_BRIDGE_LOG_DIR` | `logs/` next to `index.mjs` | Where the log is written. Not relative to the working directory. |
 
 If DSH cannot be located, the error lists every path that was tried — set `DSH_BIN` to whichever
 one is right for your install.
