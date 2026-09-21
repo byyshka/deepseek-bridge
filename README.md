@@ -54,12 +54,66 @@ What has to be in place before the bridge is of any use:
    *which directory* it runs in, through `cwd` / `DEEPSEEK_BRIDGE_CWD`. Note that DSH does **not**
    read `.claude/rules/`, so rules kept only there will not reach it.
 
-5. **Optionally, MCP servers for DSH.** DSH speaks MCP as a client, configured on its side. Anything
-   you give it there, the delegated agent can use — none of it comes from this bridge.
+5. **Optionally, MCP servers for DSH** — see the next section. Anything you give DSH there, the
+   delegated agent can use; none of it comes from this bridge.
 
 Only once `dsh --profile headless "..."` answers correctly on its own does it make sense to install
 the bridge. Nearly every "the bridge does not work" case is really a DSH setup that was never
 finished.
+
+## Giving the delegated agent MCP tools
+
+Worth knowing, because it is not obvious and the obvious route does not work: the agent behind this
+bridge can have MCP servers of its own, but **it will not inherit the ones your DSH desktop app
+uses**, and it will not read your `.mcp.json` either — that is a Claude Code file, DSH ignores it.
+
+Two things get in the way:
+
+- **Two different `DSH_HOME`s.** The desktop app runs with its own home (on Windows,
+  `%APPDATA%\dsh-desktop\harness`), where agent presets with all your servers live. A `dsh` started
+  from a terminal — which is what this bridge does — uses `~/.dsh`, where those presets do not
+  exist.
+- **The `headless` profile does not mount the preset machinery at all.** Presets come from the web
+  app bundle, which `headless` does not include. So even pointing `DSH_HOME` at the desktop home
+  does not help; here it failed outright with
+  `NO_ADAPTER: no adapter registered for provider "claude-code-oauth"`, because the desktop settings
+  declare subagents on providers this profile never loads.
+
+What does work is declaring the servers in the headless profile's own patch layer,
+`$DSH_HOME/profiles/headless/cordis.patch.yml`:
+
+```yaml
+- insert:
+  - id: mcp-group
+    name: cordis:group
+    group: true
+    config:
+    - id: mcp-example-http
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: example_http
+        transport: streamable-http
+        url: http://localhost:8008/mcp
+
+    - id: mcp-example-stdio
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: example_stdio
+        transport: stdio
+        command: uvx
+        args: ['some-mcp-package@1.0.0']
+```
+
+Nothing to install: `@deepseek-ai/dsh-mcp-client` already ships with DSH. Tools then arrive as
+`mcp__<serverName>__<tool>`. Measured here: twelve servers, 99 tools, ready in about six seconds.
+
+Two cautions:
+
+- **Do not copy an existing preset wholesale.** Presets routinely hold API tokens in plain text;
+  copying one duplicates your secrets into a second file. Declare the servers you want by hand.
+- **A dead server is silent.** With no `failOnStartupError`, a server that fails to start simply
+  contributes no tools. An empty answer therefore means "check whether the server is up", not
+  "the thing you asked about does not exist".
 
 ## Install
 
