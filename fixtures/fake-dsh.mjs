@@ -4,8 +4,31 @@
 // it would pass to the real thing: --profile headless "<task>".
 //
 // The task text selects the behaviour, so one fixture covers every case.
+//
+// It is deliberately strict about the arguments it receives. A lenient stand-in answers "ok" no
+// matter how it was invoked, which would keep every test green even if the bridge stopped passing
+// --profile headless, or stopped passing the task at all.
 
-const task = process.argv.slice(2).find((argument) => !argument.startsWith("--") && argument !== "headless") ?? "";
+const argv = process.argv.slice(2);
+const fail = (reason) => {
+  process.stderr.write(`fake-dsh: ${reason}\ngot: ${JSON.stringify(argv)}\n`);
+  process.exit(64);
+};
+
+const profileAt = argv.indexOf("--profile");
+
+if (profileAt === -1 || argv[profileAt + 1] !== "headless") {
+  fail("expected `--profile headless`");
+}
+
+// The task is the positional argument, i.e. everything that is not the profile flag or its value.
+const positional = argv.filter((argument, index) => index !== profileAt && index !== profileAt + 1);
+
+if (positional.length !== 1) {
+  fail(`expected exactly one positional task argument, got ${positional.length}`);
+}
+
+const task = positional[0];
 
 if (task.includes("HANG")) {
   // Outlive any timeout the test sets; the bridge is expected to kill this process.

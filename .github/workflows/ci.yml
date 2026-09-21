@@ -11,6 +11,10 @@ jobs:
     # kill it relies on is Windows-specific. A green Linux run would prove nothing about it.
     runs-on: windows-latest
 
+    # Without this a hung child process would sit until the GitHub-wide limit hours
+    # later, instead of failing the job.
+    timeout-minutes: 10
+
     strategy:
       fail-fast: false
       matrix:
