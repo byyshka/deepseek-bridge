@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    # Windows only, deliberately: that is the platform this bridge supports, and the process-tree
+    # kill it relies on is Windows-specific. A green Linux run would prove nothing about it.
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor from package.json engines, and current.
+        node-version: ['20.11', '22.x']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - run: npm ci
+
+      # The suite stands in a fixture for DeepSeek Harness, so no install, credentials
+      # or network access are needed here.
+      - run: npm test

@@ -4,6 +4,18 @@
   "type": "module",
   "description": "MCP server that delegates bulk, read-heavy work from Claude Code to a local DeepSeek Harness agent",
   "license": "MIT",
+  "author": "byyshka",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byyshka/deepseek-bridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/byyshka/deepseek-bridge/issues"
+  },
+  "homepage": "https://github.com/byyshka/deepseek-bridge#readme",
+  "os": [
+    "win32"
+  ],
   "main": "index.mjs",
   "bin": {
     "deepseek-bridge": "index.mjs"
