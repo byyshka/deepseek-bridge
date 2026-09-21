@@ -142,3 +142,58 @@ test("a call missing the required prompt is rejected by the schema", async () =>
   assert.ok(answer, "the server must answer a malformed call rather than stay silent");
   assert.match(JSON.stringify(answer).toLowerCase(), /prompt|required|invalid/);
 });
+
+const callText = async (args, extraEnv = {}) => {
+  const messages = await talk(
+    [
+      ...handshake,
+      {
+        jsonrpc: "2.0",
+        id: 3,
+        method: "tools/call",
+        params: { name: "deepseek_ask", arguments: { prompt: "say ok", ...args } },
+      },
+    ],
+    extraEnv,
+  );
+
+  const answer = answerTo(messages, 3);
+
+  assert.ok(answer.result, `the call failed: ${JSON.stringify(answer)}`);
+
+  return answer.result.content[0].text;
+};
+
+test("include_reasoning is off by default and appends stderr when asked", async () => {
+  const quiet = await callText({ cwd: here });
+  const verbose = await callText({ cwd: here, include_reasoning: true });
+
+  // The fixture writes "thinking" to stderr; it must stay out of the answer unless requested.
+  assert.ok(!quiet.includes("thinking"));
+  assert.match(verbose, /reasoning \(stderr\)/);
+  assert.match(verbose, /thinking/);
+});
+
+test("the working directory comes from cwd, and the footer names it", async () => {
+  assert.ok((await callText({ cwd: here })).includes(here));
+});
+
+test("without cwd the server falls back to DEEPSEEK_BRIDGE_CWD", async () => {
+  const text = await callText({}, { DEEPSEEK_BRIDGE_CWD: here });
+
+  assert.ok(text.includes(here), `footer did not name the configured default: ${text}`);
+});
+
+test("a cwd that does not exist is refused with that path named", async () => {
+  const messages = await talk([
+    ...handshake,
+    {
+      jsonrpc: "2.0",
+      id: 3,
+      method: "tools/call",
+      params: { name: "deepseek_ask", arguments: { prompt: "say ok", cwd: path.join(here, "no-such-dir") } },
+    },
+  ]);
+
+  assert.match(JSON.stringify(answerTo(messages, 3)), /cwd does not exist/);
+});

@@ -9,6 +9,9 @@
 // matter how it was invoked, which would keep every test green even if the bridge stopped passing
 // --profile headless, or stopped passing the task at all.
 
+import { spawn } from "node:child_process";
+import { writeFileSync } from "node:fs";
+
 const argv = process.argv.slice(2);
 const fail = (reason) => {
   process.stderr.write(`fake-dsh: ${reason}\ngot: ${JSON.stringify(argv)}\n`);
@@ -30,7 +33,24 @@ if (positional.length !== 1) {
 
 const task = positional[0];
 
-if (task.includes("HANG")) {
+if (task.includes("SPAWNCHILD")) {
+  // Start a detached grandchild that deliberately outlives this process, the way DSH's own
+  // children do. Killing only the wrapper leaves it running; taskkill /T takes the whole tree.
+  // Its pid goes to a file, because a timed-out call returns no output to read it from.
+  const grandchild = spawn(process.execPath, ["-e", "setTimeout(() => {}, 120000)"], {
+    detached: true,
+    stdio: "ignore",
+    windowsHide: true,
+  });
+
+  grandchild.unref();
+
+  if (process.env.FIXTURE_PID_FILE) {
+    writeFileSync(process.env.FIXTURE_PID_FILE, String(grandchild.pid), "utf8");
+  }
+
+  setTimeout(() => {}, 60_000);
+} else if (task.includes("HANG")) {
   // Outlive any timeout the test sets; the bridge is expected to kill this process.
   setTimeout(() => {}, 60_000);
 } else if (task.includes("EMPTY")) {
