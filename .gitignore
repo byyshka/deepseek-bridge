@@ -1,0 +1,4 @@
+node_modules/
+
+# Call log: holds prompts and answers verbatim when DEEPSEEK_BRIDGE_LOG=1.
+logs/
