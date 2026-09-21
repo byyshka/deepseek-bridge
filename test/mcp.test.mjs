@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const server = path.join(here, "..", "index.mjs");
-const fixture = path.join(here, "fixtures", "fake-dsh.mjs");
+const fixture = path.join(here, "..", "fixtures", "fake-dsh.mjs");
 
 // Sends a batch of requests, collects the responses, and lets the server exit when stdin closes.
 function talk(requests, extraEnv = {}) {

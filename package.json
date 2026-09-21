@@ -37,7 +37,7 @@
     "node": ">=20.11"
   },
   "scripts": {
-    "test": "node --test \"test/**/*.test.mjs\""
+    "test": "node --test"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
