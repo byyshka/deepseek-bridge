@@ -61,6 +61,26 @@ Only once `dsh --profile headless "..."` answers correctly on its own does it ma
 the bridge. Nearly every "the bridge does not work" case is really a DSH setup that was never
 finished.
 
+## Where this pays off most: 1C:Enterprise (BSL)
+
+Nothing here is domain-specific, but the combination lands hardest in 1C work, for two reasons
+that compound.
+
+**Modules are large and questions about them are cheap to ask, expensive to read.** A 70 KB common
+module, an XML form definition, a configuration dump — pulling one into the calling agent's context
+to ask a single question costs more than the answer is worth. Here the path is named, not pasted,
+and the file's text never enters the conversation.
+
+**Names have to be checked, not recalled.** Attribute and register names drift between
+configuration versions, so a model answering from training data produces something plausible and
+wrong — and indistinguishable from a verified answer. Give DSH metadata servers of its own (see the
+next section) and the delegated agent resolves `Справочник.Контрагенты.ИНН` against the real
+configuration instead. Measured on this setup: twelve MCP servers, 99 tools, ready in about six
+seconds, a metadata lookup answered in under twenty.
+
+The bridge itself stays neutral — it spawns DSH and reads its output. Whether the delegated agent
+knows anything about 1C is decided entirely by what you give it on the DSH side.
+
 ## Giving the delegated agent MCP tools
 
 Worth knowing, because it is not obvious and the obvious route does not work: the agent behind this
