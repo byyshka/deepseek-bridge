@@ -49,6 +49,13 @@ function dshEntryCandidates() {
   const tail = path.join("@deepseek-ai", "dsh", "lib", "bin.js");
   const candidates = [path.join(home, "profiles", "node_modules", tail)];
 
+  // The desktop app keeps its own home, separate from the CLI's: a machine can have DSH installed
+  // and still have nothing under ~/.dsh. Probing it here saves an "entry point not found" for
+  // anyone who installed the desktop app and never touched the CLI.
+  if (process.platform === "win32" && process.env.APPDATA) {
+    candidates.push(path.join(process.env.APPDATA, "dsh-desktop", "harness", "profiles", "node_modules", tail));
+  }
+
   // Derive the global node_modules from the running node instead of shelling out to `npm root -g`:
   // no subprocess, no deprecation warning on the server's stderr, and it follows whichever install
   // is active under nvm, fnm or volta.

@@ -68,6 +68,24 @@ Only once `dsh --profile headless "..."` answers correctly on its own does it ma
 the bridge. Nearly every "the bridge does not work" case is really a DSH setup that was never
 finished.
 
+## What you are handing over
+
+Worth being blunt about, because the framing "it reads files for you" undersells it.
+
+**DSH is a full agent, not a reader.** It has its own tools — it can write files and run commands,
+and what it is allowed to do is governed by DSH's own permission settings, not by this bridge. This
+bridge chooses *which directory* it starts in and passes your instruction; everything after that is
+between you and DSH. Read DSH's own safety documentation before pointing it anywhere that matters.
+
+**The child process inherits this server's environment.** No variable filtering happens here, so
+whatever your MCP client put in the server's environment — including credentials meant for other
+tools — is visible to the delegated agent. Keep the server's `env` block to what DSH actually
+needs.
+
+**`cwd` is the blast radius.** It decides both which files the agent can reach and which project
+instructions it picks up. Passing a directory outside your project gives you an agent working
+without your conventions, in a place you did not intend.
+
 ## Where this pays off most: 1C:Enterprise (BSL)
 
 Nothing here is domain-specific, but the combination lands hardest in 1C work, for two reasons

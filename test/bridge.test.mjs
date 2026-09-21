@@ -60,10 +60,17 @@ test("DSH_BIN pointing at a missing file fails with that path named", () => {
 });
 
 test("a missing DSH install reports every path that was tried", () => {
-  const previousBin = process.env.DSH_BIN;
-  const previousHome = process.env.DSH_HOME;
+  // Every source of candidates has to be neutralised, not just DSH_HOME: on a machine where DSH
+  // is genuinely installed, one live path left unmocked turns this into a test that passes for
+  // the wrong reason — or, as happened here, fails the moment a new candidate is added.
+  const saved = {
+    bin: process.env.DSH_BIN,
+    home: process.env.DSH_HOME,
+    appData: process.env.APPDATA,
+  };
 
   delete process.env.DSH_BIN;
+  delete process.env.APPDATA;
   process.env.DSH_HOME = "/nonexistent-dsh-home";
 
   try {
@@ -75,14 +82,39 @@ test("a missing DSH install reports every path that was tried", () => {
       return true;
     });
   } finally {
-    if (previousBin !== undefined) {
-      process.env.DSH_BIN = previousBin;
+    for (const [key, name] of [["bin", "DSH_BIN"], ["home", "DSH_HOME"], ["appData", "APPDATA"]]) {
+      if (saved[key] === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = saved[key];
+      }
     }
+  }
+});
 
-    if (previousHome === undefined) {
-      delete process.env.DSH_HOME;
-    } else {
-      process.env.DSH_HOME = previousHome;
+test("the desktop app's own home is probed too", () => {
+  // The desktop app and the CLI keep separate homes; a machine can have DSH installed and nothing
+  // under ~/.dsh. Missing this candidate is an "entry point not found" for anyone who only ever
+  // used the desktop app.
+  const saved = { bin: process.env.DSH_BIN, home: process.env.DSH_HOME, appData: process.env.APPDATA };
+
+  delete process.env.DSH_BIN;
+  process.env.DSH_HOME = "/nonexistent-dsh-home";
+  process.env.APPDATA = "/nonexistent-appdata";
+
+  try {
+    assert.throws(() => resolveDshEntry(), (error) => {
+      assert.match(error.message, /dsh-desktop[\\/]harness/, "the desktop home was never tried");
+
+      return true;
+    });
+  } finally {
+    for (const [key, name] of [["bin", "DSH_BIN"], ["home", "DSH_HOME"], ["appData", "APPDATA"]]) {
+      if (saved[key] === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = saved[key];
+      }
     }
   }
 });
