@@ -138,7 +138,7 @@ v2.3 — plugin hooks now receive a frozen context object
 v3.0 — Node 18 dropped
 
 ---
-Took 11.2s in C:path	oyourproject.
+Took 11.2s in C:\path\to\your\project.
 DSH produced 2143 chars of reasoning on stderr. Tool calls are NOT reported by the headless
 profile — if the answer states a fact about this codebase, confirm it was read rather than recalled.
 ```
